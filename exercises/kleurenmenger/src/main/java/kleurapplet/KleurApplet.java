@@ -17,14 +17,24 @@ public class KleurApplet extends Applet
 	public void init()
 	{	// NB: mwt klassieke awt, niet met behulp van Swing-componenten.
 		setLayout(new BorderLayout());
-		kc = new KleurCanvas();
+
+		Kleur kleur = new Kleur();
+
+		kc = new KleurCanvas(kleur.dataObject());
 		add(kc, "Center");
-		rgbip = new RGBInvoerPaneel(kc);
+
+		rgbip = new RGBInvoerPaneel(kleur);
 		add(rgbip, "East");
-		hsbip = new HSBInvoerPaneel(kc);
+
+		hsbip = new HSBInvoerPaneel(kleur);
 		add(hsbip, "West");
+
 		setSize(600,340);
 		setVisible(true);
+
+		kleur.addObserver(kc);
+		kleur.addObserver(rgbip);
+		kleur.addObserver(hsbip);
 	}
 }
 

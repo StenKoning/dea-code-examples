@@ -7,15 +7,18 @@ package kleurapplet;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Observable;
+import java.util.Observer;
+
 import kleurapplet.grnuminput.*;
 
-class HSBInvoerPaneel extends Panel 
+class HSBInvoerPaneel extends Panel implements Observer
 {	// Variables
 	private NumberSlider hue;
 	private NumberSlider sat;
 	private NumberSlider bright;
 
-	public HSBInvoerPaneel(KleurCanvas k)
+	public HSBInvoerPaneel(NumberListener numberListener)
 	{	// NB: mwt klassieke awt, niet met behulp van Swing-componenten.
 		setBackground(new Color(204, 204, 204));	
 		GridLayout g = new GridLayout(3, 1);
@@ -23,21 +26,29 @@ class HSBInvoerPaneel extends Panel
 		setLayout(g);
 						
 		hue = new NumberSlider(0, 1, 0.5, 2, "Tint", "");
-		hue.addNumberListener(k);
+		hue.addNumberListener(numberListener);
 		add(hue);
 		
 		sat = new NumberSlider(0, 1, 0.5, 2, "Verzadiging", "");
-		sat.addNumberListener(k);
+		sat.addNumberListener(numberListener);
 		add(sat);
 
 		bright = new NumberSlider(0, 1, 0.5, 2, "Helderheid", "");
-		bright.addNumberListener(k);
+		bright.addNumberListener(numberListener);
 		add(bright);
 	}	
 
-	public void setSliders(float h, float s, float b)
+	private void setSliders(float h, float s, float b)
 	{	hue.setValue(h);
 		sat.setValue(s);
 		bright.setValue(b);
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		if(arg instanceof Kleur.KleurUpdate){
+			Kleur.KleurUpdate kleurUpdate = (Kleur.KleurUpdate) arg;
+			setSliders(kleurUpdate.hue, kleurUpdate.saturation, kleurUpdate.brightness);
+		}
 	}
 }

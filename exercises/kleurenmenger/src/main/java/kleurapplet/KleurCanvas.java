@@ -6,21 +6,19 @@
 package kleurapplet;
 		 
 import java.awt.*;
+import java.util.Observable;
+import java.util.Observer;
+
 import kleurapplet.grnuminput.*;
 
-class KleurCanvas extends Canvas
-	implements NumberListener
+class KleurCanvas extends Canvas implements Observer
 {	// Variables for double buffering
 	Dimension dd;
 	private Image bufferTekening;		// Image tbv offline painting
 	private Graphics bufferGraphics; 		// Graphics object van bufferTekening
 	private Dimension bufferGrootte = new Dimension(0, 0); 	
     								// Size of Image, check with Frame size
-	// Variables 	
-	private int roodval;
-	private int groenval;
-	private int blauwval;
-	private float[] hsbvalues;
+	Kleur.KleurUpdate kleur;
 
 	// Constants
 	private static Color echtRood = new Color(255, 0, 0);
@@ -32,11 +30,9 @@ class KleurCanvas extends Canvas
 	RGBInvoerPaneel rgbip;
 	HSBInvoerPaneel hsbip;
 	
-	public KleurCanvas()
-	{	roodval = 127;
-		groenval = 127;
-		blauwval = 127;
-		hsbvalues = Color.RGBtoHSB(roodval, groenval, blauwval, hsbvalues);
+	public KleurCanvas(Kleur.KleurUpdate kleurUpdate)
+	{
+		kleur = kleurUpdate;
 		setBackground(Color.white);
 		setSize(360, 340);
 	}
@@ -82,27 +78,27 @@ class KleurCanvas extends Canvas
 	{	g.setFont(displayfont);
 		Color c;
 		// --- tint ----
-		c = Color.getHSBColor(hsbvalues[0], 1, 1);				// helderheid, verzadiging vol
+		c = Color.getHSBColor(kleur.hue, 1, 1);				// helderheid, verzadiging vol
 		paintKleurComponent("Tint", c, null, 30, 20, g);
 		// --- verzadiging ----
-		c = Color.getHSBColor(hsbvalues[0], hsbvalues[1], 1);		// helderheid vol
+		c = Color.getHSBColor(kleur.hue, kleur.saturation, 1);		// helderheid vol
 		paintKleurComponent("Verzadiging", c, null, 30, 100, g);
 		// --- helderheid ----
-		c = Color.getHSBColor(hsbvalues[0], 0, hsbvalues[2]);		// verzadiging 0: grijs dus
+		c = Color.getHSBColor(kleur.hue, 0, kleur.brightness);		// verzadiging 0: grijs dus
 		paintKleurComponent("Helderheid", c, null, 30, 180, g);
 		
 		// --- rood ----
-		c = new Color(roodval, 0, 0);
+		c = new Color(kleur.roodval, 0, 0);
 		paintKleurComponent("Rood", c, echtRood, 270, 20, g);
 		// --- groen ----
-		c = new Color(0, groenval, 0);
+		c = new Color(0, kleur.groenval, 0);
 		paintKleurComponent("Groen", c, echtGroen, 270, 100, g);
 		// --- blauw ----
-		c = new Color(0, 0, blauwval);
+		c = new Color(0, 0, kleur.blauwval);
 		paintKleurComponent("Blauw", c, echtBlauw, 270, 180, g);
 		
 		// --- menging ----
-		g.setColor(new Color(roodval, groenval, blauwval));
+		g.setColor(new Color(kleur.roodval, kleur.groenval, kleur.blauwval));
 		g.fillRoundRect(120, 40, 120, 280, 5, 5);		
 		g.setColor(Color.black);
 		g.drawString("De kleur", 120, 35);
@@ -112,54 +108,12 @@ class KleurCanvas extends Canvas
 		g.setColor(Color.black);
 		g.drawString("Hex. RGB:", 270, 300);
 		String hrgb = "#";
-		hrgb = hrgb.concat(hexValue(roodval));
-		hrgb = hrgb.concat(hexValue(groenval));
-		hrgb = hrgb.concat(hexValue(blauwval));
+		hrgb = hrgb.concat(hexValue(kleur.roodval));
+		hrgb = hrgb.concat(hexValue(kleur.groenval));
+		hrgb = hrgb.concat(hexValue(kleur.blauwval));
 		g.drawString(hrgb, 270, 315);		
 	}
 
-// Event handler
-
-/**
- * Bij verandering van RGB moet HSB worden aangepast
- */
-	private void adjustHSBValues()
-	{	hsbvalues = Color.RGBtoHSB(roodval, groenval, blauwval, hsbvalues);
-	}
-
-/**
- * Bij verandering van HSB moet RGB worden aangepast
- */
-	private void adjustRGBValues()
-	{	Color c = Color.getHSBColor(hsbvalues[0], hsbvalues[1], hsbvalues[2]);
-		roodval = c.getRed();
-		groenval = c.getGreen();
-		blauwval = c.getBlue();
-	}
-
-	public void numberChanged(String naam, double v)
-	{	if ( naam.equals("Rood") )
-		{	roodval = (int)v;		// harde cast!! v loopt van 0 tot 255 met 0 decimalen!
-			adjustHSBValues();
-		} else if ( naam.equals("Groen") )
-		{	groenval = (int)v;	
-			adjustHSBValues();
-		} else if ( naam.equals("Blauw") )
-		{	blauwval = (int)v;
-			adjustHSBValues();
-		} else if ( naam.equals("Tint") )
-		{	hsbvalues[0] = (float)v;	// harde cast!! v loopt van 0 tot 1 met 3 decimalen!
-			adjustRGBValues();
-		} else if ( naam.equals("Verzadiging") )
-		{	hsbvalues[1] = (float)v;
-			adjustRGBValues();
-		} else 	// must be "Helderheid"
-		{	hsbvalues[2] = (float)v;
-			adjustRGBValues();
-		}
-		repaint();
-	}
-	
 // ----- tbv double buffering
 	public void update(Graphics g)
 	{	dd = getSize();							// check eventuele resize...
@@ -178,4 +132,11 @@ class KleurCanvas extends Canvas
 		g.drawImage(bufferTekening, 0, 0, null);		// zet Image op Canvas....
 	}
 
+	@Override
+	public void update(Observable o, Object arg) {
+		if(arg instanceof Kleur.KleurUpdate){
+			this.kleur = (Kleur.KleurUpdate) arg;
+			repaint();
+		}
+	}
 }
