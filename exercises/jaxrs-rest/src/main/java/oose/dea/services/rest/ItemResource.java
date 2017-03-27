@@ -4,15 +4,17 @@ package oose.dea.services.rest;
  * Created by alexanderstenkoning on 26/03/17.
  */
 
-import javax.inject.Singleton;
+
+import javax.ejb.Singleton;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import java.util.ArrayList;
 import java.util.List;
 
-@Path("items")
+
 @Singleton
+@Path("items")
 public class ItemResource {
     private ArrayList<Item> items = new ArrayList<Item>();
 
@@ -45,7 +47,7 @@ public class ItemResource {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public void addItem(MultivaluedMap<String, String> formParams){
+    public String addItem(MultivaluedMap<String, String> formParams){
         System.out.println(formParams);
         Item newItem = new Item(
                 formParams.getFirst("sku"),
@@ -53,5 +55,7 @@ public class ItemResource {
                 formParams.getFirst("title"));
 
         items.add(newItem);
+
+        return  ""+items.size();
     }
 }
