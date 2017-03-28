@@ -5,6 +5,7 @@ import oose.dea.services.ItemService;
 import oose.dea.services.local.LocalItemService;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,7 +18,9 @@ import java.util.List;
 @Singleton
 @WebServlet(urlPatterns = "/viewItems")
 public class ItemsView extends HttpServlet {
-    private ItemService itemService = new LocalItemService();
+    @Inject
+    @Named("localItemService")
+    private ItemService itemService;
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         List<Item> items = itemService.findAll();

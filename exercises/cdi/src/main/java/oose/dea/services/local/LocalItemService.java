@@ -6,10 +6,13 @@ import oose.dea.domain.Item;
 import oose.dea.services.ItemService;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.List;
 
+@Named("localItemService")
 public class LocalItemService implements ItemService {
-    private ItemDAO itemDAO = new FakeItemDAO();
+    @Inject
+    private ItemDAO itemDAO;
 
     @Override
     public List<Item> findAll() {
